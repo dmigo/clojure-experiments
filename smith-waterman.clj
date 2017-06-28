@@ -1,4 +1,6 @@
 (ns smith-waterman)
+(declare get_max_path path)
+
 
 (defn match [a b]
       (if (= a b) 1 0))
@@ -16,31 +18,29 @@
 
 (println (alikeness "helloWorld" "whateverWh"))
 
+(defn get_max_path [x y]
+      (max-key
+        :score
+        (path (rest x) (rest y))
+        (path x (rest y))
+        (path (rest x) y)))
 
-
-(defn get_match [a] (get a :match))
 (defn path [x y]
       (if (or (empty? x) (empty? y))
-        {:match 0}
-        (let [max_path (max-key
-                         (partial get_match)
-                         (path (rest x) (rest y))
-                         (path x (rest y))
-                         (path (rest x) y))]
-             (let [xi (first x)
-                   yi (first y)
-                   matchi (match xi yi)]
-                  {
-                   :match (+
-                            (get max_path :match)
-                            matchi)
-                   :sequence (cons
-                          {:x xi :y yi :! matchi}
-                          (get max_path :sequence))
-                   })
-             )))
+        {:score 0}
+        (let [max_path (get_max_path x y)
+             xi (first x)
+             yi (first y)
+             matchi (match xi yi)]
+              {
+               :score (+
+                        (get max_path :score)
+                        matchi)
+               :sequence (conj
+                      (:sequence max_path)
+                      {:x xi :y yi :! matchi})
+              })))
 
 (def result (path "helloWorld" "whateverWh"))
-(println (get result :match))
+(println (get result :score))
 (doseq [o (get result :sequence)] (println o))
-
